@@ -11,10 +11,8 @@ from langchain.agents import (
 )
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain import hub
-import urllib.request as libreq
 import re
 import os
-import untangle
 from langchain_core.tools.simple import Tool
 import requests
 import xmltodict
