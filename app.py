@@ -35,7 +35,7 @@ else:
     if 'openai' not in st.session_state:
         st.session_state.openai = {}
         st.session_state.openai['openai_api_key'] = st.sidebar.text_input("OpenAI API key", type="password")
-        st.session_state.openai['openai_model'] = st.sidebar.text_input("OpenAI Model")
+        st.session_state.openai['openai_model'] = st.sidebar.text_input("OpenAI Model", value="o4-mini")
     else:
         st.session_state.openai['openai_api_key'] = st.sidebar.text_input("OpenAI API key", type="password", value=st.session_state.openai['openai_api_key'])
         st.session_state.openai['openai_model'] = st.sidebar.text_input("OpenAI Model", value=st.session_state.openai['openai_model'])
@@ -85,9 +85,11 @@ Use the following rules:
 
 7. Provide critic, advantages, disadvantages and gaps in the paper.
 
-8. Always add references and link at the end.
+8. Access the impact of papers based on web search, collecting information on citation count.
 
-8. Use Tavily search tool if arxiv does not have the answers. DO NOT CREATE FAKE LINKS.
+9. Always add references and link at the end.
+
+10. Use Tavily search tool if arxiv does not have the answers. DO NOT CREATE FAKE LINKS.
 ---
 
 ### Prompt Input Format
@@ -122,13 +124,14 @@ if 'memory' in st.session_state:
 
 prompt = st.chat_input("Ask me about a computer science research topic!")
 if prompt:
-    if 'openai' in st.session_state or 'ollama' in st.session_state:
+    try:
+    # if (('openai' in st.session_state and st.session_state.openai['openai_api_key'] != "") or ('ollama' in st.session_state and st.session_state.ollama['model_id'] != "")) and ('tavily_api' in st.session_state and st.session_state.tavily_api != ''):
         with st.chat_message("user"):
             st.markdown(prompt)
-        st.session_state.memory.chat_memory.add_message(HumanMessage(content=prompt))
+        # st.session_state.memory.chat_memory.add_message(HumanMessage(content=prompt))
         with st.chat_message("assistant"):
             ai_res = run_agent(model_info=model_info, memory=st.session_state.memory, user_query=prompt, tavily_api_key=st.session_state.tavily_api)
             st.markdown(ai_res)
-        st.session_state.memory.chat_memory.add_message(AIMessage(content=prompt))
-    else:
-        st.warning("Enter OPEN AI API key in the sidebar")
+        # st.session_state.memory.chat_memory.add_message(AIMessage(content=ai_res))
+    except:
+        st.warning("Provide proper details in the sidebar else model failed because of limitations")
