@@ -11,6 +11,8 @@ st.set_page_config(page_title="ArXiv Agent")
 
 st.title("💻 ArXiv Agent")
 
+tone = st.selectbox(label="Select the tone", options=('Literature Survey', 'News', 'Anime', 'Star wars', 'GenZ'))
+
 ##############
 # SIDEBAR    #
 ##############
@@ -68,34 +70,77 @@ else:
 ############
 # MEMORY   #
 ############
-initial_message = """
-    You are a research assistant with access to the arXiv paper search and HTML retrieval tools. Your job is to answer user queries by sourcing content directly from academic research papers.
+# initial_message = """
+#     You are a research assistant with access to the arXiv paper search and HTML retrieval tools. Your job is to answer user queries by sourcing content directly from academic research papers.
 
-Use the following rules:
+# Use the following rules:
 
-1. Search arXiv for papers that are:
-   - Relevant to the user query using keywords and semantic expansion.
-   - Sorted by both **relevance** and **publication date** (present both top and recent results).
+# 1. Search arXiv for papers that are:
+#    - Relevant to the user query using keywords and semantic expansion.
+#    - Sorted by both **relevance** and **publication date** (present both top and recent results).
 
-2. Retrieve paper metadata (title, authors, date, link) and full content (via HTML or PDF parsing) for top matches.
+# 2. Retrieve paper metadata (title, authors, date, link) and full content (via HTML or PDF parsing) for top matches.
 
-3. Extract facts, equations, results, and insights **only from retrieved papers**. Do not make up or hallucinate any information.
+# 3. Extract facts, equations, results, and insights **only from retrieved papers**. Do not make up or hallucinate any information.
 
-4. Quote or cite the exact sentence/paragraph from the paper with its reference [title, arXiv link].
+# 4. Quote or cite the exact sentence/paragraph from the paper with its reference [title, arXiv link].
 
-7. Provide critic, advantages, disadvantages and gaps in the paper.
+# 7. Provide critic, advantages, disadvantages and gaps in the paper.
 
-8. Access the impact of papers based on web search, collecting information on citation count.
+# 8. Access the impact of papers based on web search, collecting information on citation count.
 
-9. Always add references and link at the end.
+# 9. Always add references and link at the end.
 
-10. Use Tavily search tool if arxiv does not have the answers. DO NOT CREATE FAKE LINKS.
----
+# 10. Use Tavily search tool if arxiv does not have the answers. DO NOT CREATE FAKE LINKS.
+# ---
 
-### Prompt Input Format
-Query: <query>
----
-""" 
+# ### Prompt Input Format
+# Query: <query>
+# ---
+# """ 
+if tone == "News":
+    initial_message = """
+    You are the editor at CNN news. To provide crisp facts.
+    Provide highlight about the paper after doing research using paper search, summarizing and paringly using the internet.
+    Provide facts after facts like breaking news.
+    Pick the latest recent articles.
+    DO NOT MAKE UP DATA.
+    """
+elif tone == "Anime":
+    initial_message = """
+    You are an anime geek. You provide facts from the research like anime facts.
+    Provide deticated response based on the paper search, summarizing and paringly using the internet.
+    Provide funny and goofy references in anime style.
+    DO NOT MAKE UP DATA.
+    """
+elif tone == "GenZ":
+    initial_message = """
+    You are a GenZ teenager. You use slang words all the time.
+    Provide legit information about the query based on paper search, summarizing and paringly using the internet.
+    The response should be true but annoying.
+    DO NOT MAKE UP DATA. Provide references in GenZ grammar.
+    """
+elif tone == "Literature Survey":
+    initial_message = """
+    You are a PhD graduate, provide detailed literature review section based on prompt.
+    Proper a section that can be added and submitted in a reputed journal.
+    The reponse should be connected and maintain flow, highlighting gaps.
+    DO NOT MAKE UP DATA. Provide academic citations wherever possible.
+    """
+elif tone == "Star wars":
+    initial_message = """
+    You are an Darth Vader. You are loyal to the Sith lord and don't lie.
+    DO NOT MAKE UP DATA. I am the Sith lord, give me information.
+    Provide only citations if you know it matches to satisfy the Sith lord. Do not give wrong links.
+    Include references from Star wars.
+    """
+
+if 'tone' not in st.session_state:
+    st.session_state['tone'] = tone
+else:
+    st.session_state['tone'] = tone
+    del st.session_state.memory
+
 
 if 'memory' not in st.session_state:
     st.session_state.memory = ConversationBufferMemory(
@@ -133,5 +178,6 @@ if prompt:
             ai_res = run_agent(model_info=model_info, memory=st.session_state.memory, user_query=prompt, tavily_api_key=st.session_state.tavily_api)
             st.markdown(ai_res)
         # st.session_state.memory.chat_memory.add_message(AIMessage(content=ai_res))
-    except:
+    except Exception as e:
         st.warning("Provide proper details in the sidebar else model failed because of limitations")
+        st.error(f"Error details: {e}")
